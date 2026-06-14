@@ -336,6 +336,32 @@ export default class GarminConnect {
     }
 
     /**
+     * Uploads a photo to an activity
+     * @param activityId - The ID of the activity to attach the photo to
+     * @param filePath - Path to the image file to upload
+     * @returns Response from the photo upload operation
+     */
+    async uploadActivityPhoto(
+        activityId: GCActivityId,
+        filePath: string
+    ): Promise<unknown> {
+        if (!activityId) throw new Error('Missing activityId');
+        if (!filePath) throw new Error('Missing filePath');
+
+        const fileBuffer = fs.createReadStream(filePath);
+        const form = new FormData();
+        form.append('file', fileBuffer, {
+            filename: path.basename(filePath)
+        });
+
+        return this.client.post(this.url.ACTIVITY_IMAGE(activityId), form, {
+            headers: {
+                'Content-Type': form.getHeaders()['content-type']
+            }
+        });
+    }
+
+    /**
      * Deletes an activity by activityId
      * @param activity - with activityId
      * @returns void

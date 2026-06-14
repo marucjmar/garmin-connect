@@ -45,6 +45,10 @@ export class UrlClass {
     ACTIVITY_BY_ID(activityId: GCActivityId) {
         return `${this.GC_API}/activity-service/activity/${activityId}`;
     }
+
+    ACTIVITY_IMAGE(activityId: GCActivityId) {
+        return `${this.GC_API}/activity-service/activity/${activityId}/image`;
+    }
     get STAT_ACTIVITIES() {
         return `${this.GC_API}/fitnessstats-service/activity`;
     }

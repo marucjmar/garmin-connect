@@ -320,6 +320,25 @@ const upload = await GCClient.uploadActivity('./some/path/to/file.fit');
 // const uploadId = upload.detailedImportResult.uploadId;
 ```
 
+```js
+/**
+ * Uploads a photo to an activity
+ * @param activityId - The ID of the activity to attach the photo to
+ * @param filePath - Path to the image file to upload
+ * @returns Response from the photo upload operation
+ */
+async uploadActivityPhoto(
+    activityId: GCActivityId,
+    filePath: string
+): Promise<unknown>
+```
+
+Example:
+
+```js
+await GCClient.uploadActivityPhoto(12345678, './my-run-photo.jpg');
+```
+
 ## Workouts
 
 ### Managing Workouts
