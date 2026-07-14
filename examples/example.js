@@ -1,4 +1,4 @@
-const { GarminConnect } = require('@flow-js/garmin-connect`');
+const { GarminConnect } = require('@marucjmar/garmin-connect`');
 
 // Has to be run in an async function to be able to use the await keyword
 const main = async () => {

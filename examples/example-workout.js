@@ -16,7 +16,7 @@ const {
     NoTarget,
     StepType,
     WorkoutType
-} = require('@flow-js/garmin-connect`');
+} = require('@marucjmar/garmin-connect`');
 
 (async function () {
     const GARMIN_USERNAME = process.env.GARMIN_USERNAME;

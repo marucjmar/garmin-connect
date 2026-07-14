@@ -1,5 +1,5 @@
 {
-    "name": "@flow-js/garmin-connect",
+    "name": "@marucjmar/garmin-connect",
     "version": "1.6.17",
     "description": "Makes it simple to interface with Garmin Connect to get or set any data point",
     "main": "./dist/index.js",
