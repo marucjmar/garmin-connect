@@ -16,7 +16,7 @@ const {
     NoTarget,
     StepType,
     WorkoutType
-} = require('@marucjmar/garmin-connect`');
+} = require('garmin-connect-nexxt`');
 
 (async function () {
     const GARMIN_USERNAME = process.env.GARMIN_USERNAME;

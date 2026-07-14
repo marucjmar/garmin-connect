@@ -6,7 +6,7 @@ This is a fork of https://github.com/Pythe1337N/garmin-connect which was inspire
 
 A JavaScript library for accessing and managing your Garmin Connect data. It comes with methods to get and set information in your Garmin account, and also supports [custom requests](#custom-requests) using `GET`, `POST`, and `PUT` so you can cover additional needs.
 
-This document provides detailed information about the public API methods available in the `@marucjmar/garmin-connect` library.
+This document provides detailed information about the public API methods available in the `garmin-connect-nexxt` library.
 
 ## Table of Contents
 
@@ -43,7 +43,7 @@ This document provides detailed information about the public API methods availab
 Create a new instance of the Garmin Connect client.
 
 ```js
-const { GarminConnect } = require('@marucjmar/garmin-connect');
+const { GarminConnect } = require('garmin-connect-nexxt');
 
 // Create a new Garmin Connect Client with credentials
 const GCClient = new GarminConnect({
