@@ -72,14 +72,15 @@ export class HttpClient {
     private cookies: Record<string, string> = {};
 
     private lastRequestMs: number = 0;
+    private nextRequestsDelayMs: number = 0;
 
-    constructor(url: UrlClass, options?: { nextRequestsDelay: number }) {
+    constructor(url: UrlClass) {
         this.url = url;
         this.client = axios.create();
         this.client.interceptors.request.use(
             async (config) => {
-                if (options?.nextRequestsDelay) {
-                    const delayTime = Date.now() - this.lastRequestMs + options.nextRequestsDelay;
+                if (this.nextRequestsDelayMs > 0) {
+                    const delayTime = Date.now() - this.lastRequestMs + this.nextRequestsDelayMs;
                     this.lastRequestMs = Date.now();
 
                     await delay(delayTime);
@@ -501,5 +502,9 @@ export class HttpClient {
         token['refresh_token_expires_at'] =
             DateTime.now().toSeconds() + token['refresh_token_expires_in'];
         return token;
+    }
+
+    setNextRequestsDelay(delayTimeMs: number): void {
+        this.nextRequestsDelayMs = delayTimeMs;
     }
 }
