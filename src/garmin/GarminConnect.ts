@@ -82,7 +82,7 @@ export enum Event {
 export interface Session {}
 
 export default class GarminConnect {
-    client: HttpClient;
+    httpClient: HttpClient;
     private _userHash: GCUserHash | undefined;
     private credentials: GCCredentials;
     private listeners: Listeners;
@@ -97,7 +97,7 @@ export default class GarminConnect {
         }
         this.credentials = credentials;
         this.url = new UrlClass(domain);
-        this.client = new HttpClient(this.url);
+        this.httpClient = new HttpClient(this.url);
         this._userHash = undefined;
         this.listeners = {};
     }
@@ -121,7 +121,7 @@ export default class GarminConnect {
         if (options) {
             this.credentials.options = options;
         }
-        await this.client.login(
+        await this.httpClient.login(
             this.credentials.username,
             this.credentials.password,
             this.credentials.options
@@ -137,16 +137,16 @@ export default class GarminConnect {
             createDirectory(dirPath);
         }
         // save oauth1 to json
-        if (this.client.oauth1Token) {
+        if (this.httpClient.oauth1Token) {
             writeToFile(
                 path.join(dirPath, 'oauth1_token.json'),
-                JSON.stringify(this.client.oauth1Token)
+                JSON.stringify(this.httpClient.oauth1Token)
             );
         }
-        if (this.client.oauth2Token) {
+        if (this.httpClient.oauth2Token) {
             writeToFile(
                 path.join(dirPath, 'oauth2_token.json'),
-                JSON.stringify(this.client.oauth2Token)
+                JSON.stringify(this.httpClient.oauth2Token)
             );
         }
     }
@@ -163,13 +163,13 @@ export default class GarminConnect {
             path.join(dirPath, 'oauth1_token.json')
         ) as unknown as string;
         const oauth1 = JSON.parse(oauth1Data);
-        this.client.oauth1Token = oauth1;
+        this.httpClient.oauth1Token = oauth1;
 
         let oauth2Data = fs.readFileSync(
             path.join(dirPath, 'oauth2_token.json')
         ) as unknown as string;
         const oauth2 = JSON.parse(oauth2Data);
-        this.client.oauth2Token = oauth2;
+        this.httpClient.oauth2Token = oauth2;
     }
     /**
      * Exports OAuth tokens as an object
@@ -177,12 +177,12 @@ export default class GarminConnect {
      * @throws Error if tokens are not found
      */
     exportToken(): IGarminTokens {
-        if (!this.client.oauth1Token || !this.client.oauth2Token) {
+        if (!this.httpClient.oauth1Token || !this.httpClient.oauth2Token) {
             throw new Error('exportToken: Token not found');
         }
         return {
-            oauth1: this.client.oauth1Token,
-            oauth2: this.client.oauth2Token
+            oauth1: this.httpClient.oauth1Token,
+            oauth2: this.httpClient.oauth2Token
         };
     }
     /**
@@ -191,8 +191,8 @@ export default class GarminConnect {
      * @param oauth2 - OAuth2 token object
      */
     loadToken(oauth1: IOauth1Token, oauth2: IOauth2Token): void {
-        this.client.oauth1Token = oauth1;
-        this.client.oauth2Token = oauth2;
+        this.httpClient.oauth1Token = oauth1;
+        this.httpClient.oauth2Token = oauth2;
     }
 
     /**
@@ -200,7 +200,7 @@ export default class GarminConnect {
      * @returns User settings data
      */
     async getUserSettings(): Promise<IUserSettings> {
-        return this.client.get<IUserSettings>(this.url.USER_SETTINGS);
+        return this.httpClient.get<IUserSettings>(this.url.USER_SETTINGS);
     }
 
     /**
@@ -208,7 +208,7 @@ export default class GarminConnect {
      * @returns User's social profile data
      */
     async getUserProfile(): Promise<ISocialProfile> {
-        return this.client.get<ISocialProfile>(this.url.USER_PROFILE);
+        return this.httpClient.get<ISocialProfile>(this.url.USER_PROFILE);
     }
 
     /**
@@ -225,7 +225,7 @@ export default class GarminConnect {
         activityType?: ActivityType,
         subActivityType?: ActivitySubType
     ): Promise<IActivity[]> {
-        return this.client.get<IActivity[]>(this.url.ACTIVITIES, {
+        return this.httpClient.get<IActivity[]>(this.url.ACTIVITIES, {
             params: { start, limit, activityType, subActivityType }
         });
     }
@@ -240,7 +240,7 @@ export default class GarminConnect {
         activityId: GCActivityId;
     }): Promise<IActivity> {
         if (!activity.activityId) throw new Error('Missing activityId');
-        return this.client.get<IActivity>(
+        return this.httpClient.get<IActivity>(
             this.url.ACTIVITY + activity.activityId
         );
     }
@@ -250,7 +250,7 @@ export default class GarminConnect {
      * @returns Activity statistics including counts by type
      */
     async countActivities(): Promise<ICountActivities> {
-        return this.client.get<ICountActivities>(this.url.STAT_ACTIVITIES, {
+        return this.httpClient.get<ICountActivities>(this.url.STAT_ACTIVITIES, {
             params: {
                 aggregation: 'lifetime',
                 startDate: '1970-01-01',
@@ -288,19 +288,19 @@ export default class GarminConnect {
         }
         let fileBuffer: Buffer;
         if (type === 'tcx') {
-            fileBuffer = await this.client.get(
+            fileBuffer = await this.httpClient.get(
                 this.url.DOWNLOAD_TCX + activity.activityId
             );
         } else if (type === 'gpx') {
-            fileBuffer = await this.client.get(
+            fileBuffer = await this.httpClient.get(
                 this.url.DOWNLOAD_GPX + activity.activityId
             );
         } else if (type === 'kml') {
-            fileBuffer = await this.client.get(
+            fileBuffer = await this.httpClient.get(
                 this.url.DOWNLOAD_KML + activity.activityId
             );
         } else if (type === 'zip') {
-            fileBuffer = await this.client.get<Buffer>(
+            fileBuffer = await this.httpClient.get<Buffer>(
                 this.url.DOWNLOAD_ZIP + activity.activityId,
                 {
                     responseType: 'arraybuffer'
@@ -334,7 +334,7 @@ export default class GarminConnect {
         const fileBuffer = fs.createReadStream(file);
         const form = new FormData();
         form.append('userfile', fileBuffer);
-        const response = await this.client.post(
+        const response = await this.httpClient.post(
             this.url.UPLOAD + '.' + format,
             form,
             {
@@ -365,7 +365,7 @@ export default class GarminConnect {
             filename: path.basename(filePath)
         });
 
-        return this.client.post(this.url.ACTIVITY_IMAGE(activityId), form, {
+        return this.httpClient.post(this.url.ACTIVITY_IMAGE(activityId), form, {
             headers: {
                 'Content-Type': form.getHeaders()['content-type']
             }
@@ -388,7 +388,7 @@ export default class GarminConnect {
         activityId: GCActivityId;
     }): Promise<void> {
         if (!activity.activityId) throw new Error('Missing activityId');
-        await this.client.delete<void>(this.url.ACTIVITY + activity.activityId);
+        await this.httpClient.delete<void>(this.url.ACTIVITY + activity.activityId);
     }
 
     /**
@@ -397,7 +397,7 @@ export default class GarminConnect {
      * @param limit
      */
     async getWorkouts(start: number, limit: number): Promise<IWorkout[]> {
-        return this.client.get<IWorkout[]>(this.url.WORKOUTS, {
+        return this.httpClient.get<IWorkout[]>(this.url.WORKOUTS, {
             params: {
                 start,
                 limit
@@ -414,7 +414,7 @@ export default class GarminConnect {
         workoutId: string;
     }): Promise<IWorkoutDetail> {
         if (!workout.workoutId) throw new Error('Missing workoutId');
-        return this.client.get<IWorkoutDetail>(
+        return this.httpClient.get<IWorkoutDetail>(
             this.url.WORKOUT(workout.workoutId)
         );
     }
@@ -447,7 +447,7 @@ export default class GarminConnect {
      * ```
      */
     async createWorkout(workout: IWorkoutDetail) {
-        return this.client.post<Workout>(this.url.WORKOUT(), workout);
+        return this.httpClient.post<Workout>(this.url.WORKOUT(), workout);
     }
 
     /**
@@ -463,7 +463,7 @@ export default class GarminConnect {
      */
     async deleteWorkout(workout: { workoutId: string }) {
         if (!workout.workoutId) throw new Error('Missing workout');
-        return this.client.delete(this.url.WORKOUT(workout.workoutId));
+        return this.httpClient.delete(this.url.WORKOUT(workout.workoutId));
     }
 
     /**
@@ -485,7 +485,7 @@ export default class GarminConnect {
         workout: { workoutId: string },
         scheduleDate: string
     ) {
-        return this.client.post(
+        return this.httpClient.post(
             this.url.SCHEDULE_WORKOUT(parseInt(workout.workoutId)),
             { date: scheduleDate }
         );
@@ -500,7 +500,7 @@ export default class GarminConnect {
     async getSteps(date = new Date()): Promise<number> {
         const dateString = toDateString(date);
 
-        const days = await this.client.get<IDailyStepsType[]>(
+        const days = await this.httpClient.get<IDailyStepsType[]>(
             `${this.url.DAILY_STEPS}${dateString}/${dateString}`
         );
         const dayStats = days.find(
@@ -524,7 +524,7 @@ export default class GarminConnect {
         try {
             const dateString = toDateString(date);
 
-            const sleepData = await this.client.get<SleepData>(
+            const sleepData = await this.httpClient.get<SleepData>(
                 `${this.url.DAILY_SLEEP}`,
                 { params: { date: dateString } }
             );
@@ -599,7 +599,7 @@ export default class GarminConnect {
     async getDailyWeightData(date = new Date()): Promise<WeightData> {
         try {
             const dateString = toDateString(date);
-            const weightData = await this.client.get<WeightData>(
+            const weightData = await this.httpClient.get<WeightData>(
                 `${this.url.DAILY_WEIGHT}/${dateString}`
             );
 
@@ -641,7 +641,7 @@ export default class GarminConnect {
     async getDailyHydration(date = new Date()): Promise<number> {
         try {
             const dateString = toDateString(date);
-            const hydrationData = await this.client.get<HydrationData>(
+            const hydrationData = await this.httpClient.get<HydrationData>(
                 `${this.url.DAILY_HYDRATION}/${dateString}`
             );
 
@@ -669,7 +669,7 @@ export default class GarminConnect {
         timezone: string
     ): Promise<UpdateWeight> {
         try {
-            const weightData = await this.client.post<UpdateWeight>(
+            const weightData = await this.httpClient.post<UpdateWeight>(
                 `${this.url.UPDATE_WEIGHT}`,
                 {
                     dateTimestamp: getLocalTimestamp(date, timezone),
@@ -698,7 +698,7 @@ export default class GarminConnect {
     ): Promise<WaterIntake> {
         try {
             const dateString = toDateString(date);
-            const hydrationData = await this.client.put<WaterIntake>(
+            const hydrationData = await this.httpClient.put<WaterIntake>(
                 `${this.url.HYDRATION_LOG}`,
                 {
                     calendarDate: dateString,
@@ -723,7 +723,7 @@ export default class GarminConnect {
      */
     async getGolfSummary(): Promise<GolfSummary> {
         try {
-            const golfSummary = await this.client.get<GolfSummary>(
+            const golfSummary = await this.httpClient.get<GolfSummary>(
                 `${this.url.GOLF_SCORECARD_SUMMARY}`
             );
 
@@ -745,7 +745,7 @@ export default class GarminConnect {
      */
     async getGolfScorecard(scorecardId: number): Promise<GolfScorecard> {
         try {
-            const golfScorecard = await this.client.get<GolfScorecard>(
+            const golfScorecard = await this.httpClient.get<GolfScorecard>(
                 `${this.url.GOLF_SCORECARD_DETAIL}`,
                 { params: { 'scorecard-ids': scorecardId } }
             );
@@ -771,7 +771,7 @@ export default class GarminConnect {
     async getHeartRate(date = new Date()): Promise<HeartRate> {
         try {
             const dateString = toDateString(date);
-            const heartRate = await this.client.get<HeartRate>(
+            const heartRate = await this.httpClient.get<HeartRate>(
                 `${this.url.DAILY_HEART_RATE}`,
                 { params: { date: dateString } }
             );
@@ -788,7 +788,7 @@ export default class GarminConnect {
      */
     async getGear(availableGearDate?: string): Promise<GearData[]> {
         const id = (await this.getUserProfile()).profileId;
-        return this.client.get(this.url.GEAR(id, availableGearDate));
+        return this.httpClient.get(this.url.GEAR(id, availableGearDate));
     }
 
     /**
@@ -796,7 +796,7 @@ export default class GarminConnect {
      * @param activityId
      */
     async getGearsForActivity(activityId: GCActivityId): Promise<GearData[]> {
-        return this.client.get(this.url.GEAR_OF_ACTIVITY(activityId));
+        return this.httpClient.get(this.url.GEAR_OF_ACTIVITY(activityId));
     }
 
     /**
@@ -809,7 +809,7 @@ export default class GarminConnect {
         activityId: GCActivityId,
         gearId: GCGearId
     ): Promise<GearData> {
-        return this.client.put(
+        return this.httpClient.put(
             this.url.LINK_GEAR_TO_ACTIVITY(activityId, gearId),
             {}
         );
@@ -825,7 +825,7 @@ export default class GarminConnect {
         activityId: GCActivityId,
         gearId: GCGearId
     ): Promise<GearData> {
-        return this.client.put(
+        return this.httpClient.put(
             this.url.UNLINK_GEAR_FROM_ACTIVITY(activityId, gearId),
             {}
         );
@@ -836,7 +836,7 @@ export default class GarminConnect {
      * @returns List of workouts
      */
     async workouts(): Promise<Workout[]> {
-        return this.client.get(this.url.WORKOUTS_LIST());
+        return this.httpClient.get(this.url.WORKOUTS_LIST());
     }
 
     /**
@@ -857,7 +857,7 @@ export default class GarminConnect {
             contentType: 'application/octet-stream'
         });
 
-        return await this.client.post(this.url.IMPORT_GPX_FILE, form, {
+        return await this.httpClient.post(this.url.IMPORT_GPX_FILE, form, {
             headers: {
                 ...form.getHeaders()
             }
@@ -883,7 +883,7 @@ export default class GarminConnect {
         coursePoints: CoursePoint[] = [],
         privacy: CoursePrivacyRule = CoursePrivacyRule.PRIVATE
     ): Promise<CreatedCourseResponse> {
-        return await this.client.post(
+        return await this.httpClient.post(
             this.url.CREATE_COURSE_GPX_FILE,
             courseRequestTemplate(
                 activityType,
@@ -901,7 +901,7 @@ export default class GarminConnect {
      * @returns List of courses
      */
     async listCourses(): Promise<ListCoursesResponse> {
-        return this.client.get<ListCoursesResponse>(this.url.LIST_COURSES);
+        return this.httpClient.get<ListCoursesResponse>(this.url.LIST_COURSES);
     }
 
     /**
@@ -912,7 +912,7 @@ export default class GarminConnect {
     async getCourseDetails(
         courseId: string | number
     ): Promise<CourseDetailsResponse> {
-        return this.client.get<CourseDetailsResponse>(
+        return this.httpClient.get<CourseDetailsResponse>(
             this.url.SINGLE_COURSE(courseId)
         );
     }
@@ -928,7 +928,7 @@ export default class GarminConnect {
         privacy: CoursePrivacyRule = CoursePrivacyRule.PRIVATE
     ): Promise<CourseDetailsResponse> {
         const courseDetails = await this.getCourseDetails(courseId);
-        return this.client.put<CourseDetailsResponse, CourseDetailsRequest>(
+        return this.httpClient.put<CourseDetailsResponse, CourseDetailsRequest>(
             this.url.SINGLE_COURSE(courseId),
             {
                 ...courseDetails,
@@ -948,7 +948,7 @@ export default class GarminConnect {
         courseName: string
     ): Promise<CourseDetailsResponse> {
         const courseDetails = await this.getCourseDetails(courseId);
-        return this.client.put<CourseDetailsResponse, CourseDetailsRequest>(
+        return this.httpClient.put<CourseDetailsResponse, CourseDetailsRequest>(
             this.url.SINGLE_COURSE(courseId),
             {
                 ...courseDetails,
@@ -965,7 +965,7 @@ export default class GarminConnect {
     async updateCourse(
         courseRequest: CourseDetailsRequest
     ): Promise<CourseDetailsResponse> {
-        return this.client.put<CourseDetailsResponse, CourseDetailsRequest>(
+        return this.httpClient.put<CourseDetailsResponse, CourseDetailsRequest>(
             this.url.SINGLE_COURSE(courseRequest.courseId),
             courseRequest
         );
@@ -977,7 +977,7 @@ export default class GarminConnect {
      * @returns GPX file content as string
      */
     async exportCourseAsGpx(courseId: number): Promise<string> {
-        return this.client.get<string>(
+        return this.httpClient.get<string>(
             this.url.EXPORT_COURSE_GPX_FILE(courseId),
             {
                 responseType: 'text'
@@ -990,7 +990,7 @@ export default class GarminConnect {
      * @param year {number} - The year for which to retrieve calendar events.
      */
     async getYearCalendarEvents(year: number): Promise<YearCalendar> {
-        return this.client.get<any>(this.url.CALENDAR_YEAR(year));
+        return this.httpClient.get<any>(this.url.CALENDAR_YEAR(year));
     }
 
     /**
@@ -1002,7 +1002,7 @@ export default class GarminConnect {
         year: number,
         month: number
     ): Promise<MonthCalendar> {
-        return this.client.get<any>(this.url.CALENDAR_MONTH(year, month));
+        return this.httpClient.get<any>(this.url.CALENDAR_MONTH(year, month));
     }
 
     /**
@@ -1018,7 +1018,7 @@ export default class GarminConnect {
         day: number,
         firstDayOfWeek?: number
     ): Promise<any> {
-        return this.client.get<any>(
+        return this.httpClient.get<any>(
             this.url.CALENDAR_WEEK(year, month, day, firstDayOfWeek)
         );
     }
@@ -1035,7 +1035,7 @@ export default class GarminConnect {
         if (!activityId) throw new Error('Missing activityId');
         if (!newName) throw new Error('Missing newName');
 
-        await this.client.put<void>(this.url.ACTIVITY_BY_ID(activityId), {
+        await this.httpClient.put<void>(this.url.ACTIVITY_BY_ID(activityId), {
             activityName: newName
         });
     }
@@ -1047,7 +1047,7 @@ export default class GarminConnect {
      * @returns Response data of type T
      */
     async get<T>(url: string, data?: any) {
-        const response = await this.client.get(url, data);
+        const response = await this.httpClient.get(url, data);
         return response as T;
     }
 
@@ -1058,7 +1058,7 @@ export default class GarminConnect {
      * @returns Response data of type T
      */
     async post<T>(url: string, data: any) {
-        const response = await this.client.post<T>(url, data, {});
+        const response = await this.httpClient.post<T>(url, data, {});
         return response as T;
     }
 
@@ -1069,7 +1069,7 @@ export default class GarminConnect {
      * @returns Response data of type T
      */
     async put<T>(url: string, data: any) {
-        const response = await this.client.put<T>(url, data, {});
+        const response = await this.httpClient.put<T>(url, data, {});
         return response as T;
     }
 }
