@@ -52,6 +52,7 @@ export interface IActivity {
     startLatitude: number;
     startLongitude: number;
     hasPolyline: boolean;
+    hasImages: boolean;
     ownerId: number;
     ownerDisplayName: string;
     ownerFullName: string;
@@ -59,6 +60,7 @@ export interface IActivity {
     ownerProfileImageUrlMedium: string;
     ownerProfileImageUrlLarge: string;
     calories: number;
+    bmrCalories: number;
     averageHR: number;
     maxHR: number;
     averageRunningCadenceInStepsPerMinute: number;
@@ -125,6 +127,7 @@ export interface IActivity {
     maxTemperature: unknown;
     minElevation: number;
     maxElevation: number;
+    avgElevation: number;
     avgDoubleCadence: unknown;
     maxDoubleCadence: number;
     summarizedExerciseSets: unknown;
@@ -211,6 +214,7 @@ export interface IActivity {
     anaerobicTrainingEffectMessage: unknown;
     splitSummaries: [];
     hasSplits: boolean;
+    hasIntensityIntervals: boolean;
     maxBottomTime: unknown;
     hasSeedFirstbeatProfile: unknown;
     calendarEventId: unknown;
@@ -227,6 +231,12 @@ export interface IActivity {
     decoDive: unknown;
     pr: boolean;
     parent: boolean;
+    activityUUID: string;
+    qualifyingDive: boolean;
+    moderateIntensityMinutes: number;
+    vigorousIntensityMinutes: number;
+    differenceBodyBattery: number;
+    hasHeatMap: boolean;
 }
 
 export interface IActivityDetails {
