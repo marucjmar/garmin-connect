@@ -841,7 +841,7 @@ async put<T>(url: string, data: any)
  * @param delayTimeMS - time to wait before next request execution
  * @returns Void
  */
-async client.setNextRequestsDelay<T>(url: string, data?: any)
+async httpClient.setNextRequestsDelay<T>(url: string, data?: any)
 ```
 
 Example:
