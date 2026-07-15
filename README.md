@@ -79,9 +79,15 @@ async login(username?: string, password?: string): Promise<GarminConnect>
 Example:
 
 ```js
+//Recommended to against ban
+GCClient.httpClient.setNextRequestsDelay(1000);
+
 await GCClient.login();
 // Or with specific credentials
 await GCClient.login('my.email@example.com', 'MySecretPassword');
+
+//Disable next requests delay
+GCClient.httpClient.setNextRequestsDelay(0);
 ```
 
 ### Session Management
@@ -145,8 +151,8 @@ loadToken(oauth1: IOauth1Token, oauth2: IOauth2Token): void
 Example:
 
 ```js
-const oauth1 = GCClient.client.oauth1Token;
-const oauth2 = GCClient.client.oauth2Token;
+const oauth1 = GCClient.httpClient.oauth1Token;
+const oauth2 = GCClient.httpClient.oauth2Token;
 // Later, use these to restore the session
 GCClient.loadToken(oauth1, oauth2);
 ```
@@ -825,4 +831,21 @@ async post<T>(url: string, data: any)
  * @returns Response data of type T
  */
 async put<T>(url: string, data: any)
+```
+
+## Client Additional Settings
+
+```js
+/**
+ * Set a next request delay
+ * @param delayTimeMS - time to wait before next request execution
+ * @returns Void
+ */
+async httpClient.setNextRequestsDelay<T>(url: string, data?: any)
+```
+
+Example:
+
+```js
+GCClient.httpClient.setNextRequestsDelay(1000);
 ```
