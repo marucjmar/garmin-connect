@@ -80,10 +80,14 @@ export class HttpClient {
         this.client.interceptors.request.use(
             async (config) => {
                 if (this.nextRequestsDelayMs > 0) {
-                    const delayTime = Date.now() - this.lastRequestMs + this.nextRequestsDelayMs;
-                    this.lastRequestMs = Date.now();
+                    const elapsedMs = Date.now() - this.lastRequestMs;
+                    const delayTime = Math.max(0, this.nextRequestsDelayMs - elapsedMs);
 
-                    await delay(delayTime);
+                    if (delayTime > 0) {
+                        await delay(delayTime);
+                    }
+
+                    this.lastRequestMs = Date.now();
                 }
 
                 // Do something before request is sent
