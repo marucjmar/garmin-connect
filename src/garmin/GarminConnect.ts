@@ -69,6 +69,7 @@ export type EventCallback<T> = (data: T) => void;
 export interface GCCredentials {
     username: string;
     password: string;
+    options?: LoginOptions
 }
 export interface Listeners {
     [event: string]: EventCallback<any>[];
@@ -117,10 +118,13 @@ export default class GarminConnect {
             this.credentials.username = username;
             this.credentials.password = password;
         }
+        if (options) {
+            this.credentials.options = options;
+        }
         await this.client.login(
             this.credentials.username,
             this.credentials.password,
-            options
+            this.credentials.options
         );
         return this;
     }
