@@ -35,6 +35,7 @@ const SSO_PAGE_HEADERS = {
 // responseStatus.type values returned by the mobile SSO API.
 const SSO_SUCCESSFUL = 'SUCCESSFUL';
 const SSO_MFA_REQUIRED = 'MFA_REQUIRED';
+const delay = async (time: number) => await new Promise((r) => setTimeout(r, time)); 
 
 interface ISSOResponse {
     serviceURL: string | null;
@@ -70,9 +71,27 @@ export class HttpClient {
     // them between requests via the interceptors below.
     private cookies: Record<string, string> = {};
 
-    constructor(url: UrlClass) {
+    private lastRequestMs: number = 0;
+
+    constructor(url: UrlClass, options?: { nextRequestsDelay: number }) {
         this.url = url;
         this.client = axios.create();
+        this.client.interceptors.request.use(
+            async (config) => {
+                if (options?.nextRequestsDelay) {
+                    const delayTime = Date.now() - this.lastRequestMs + options.nextRequestsDelay;
+                    this.lastRequestMs = Date.now();
+
+                    await delay(delayTime);
+                }
+
+                // Do something before request is sent
+                return config;
+            },
+            (error) => {
+                return Promise.reject(error);
+            }
+        );
         this.client.interceptors.response.use(
             (response) => {
                 this.storeCookies(response.headers?.['set-cookie']);
@@ -411,7 +430,7 @@ export class HttpClient {
         };
         const headers = oauth.toHeader(oauth.authorize(step4RequestData));
         // console.log('getOauth1Token - headers:', headers);
-
+        
         const response = await this.get<string>(url, {
             headers: {
                 ...headers,
